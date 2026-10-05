@@ -171,80 +171,24 @@
     </footer>
   </div>
 
-  <!-- MUSIC PLAYER -->
-  <div class="music-player" id="musicPlayer" title="Putar Musik">
-    <i class="fas fa-music"></i>
-  </div>
+   <!-- MUSIC PLAYER --> 
+  <div class="music-player" id="musicPlayer" title="Putar Musik"> 
+    <i class="fas fa-music"></i> 
+  </div> 
+ 
+  <!-- AUDIO (musik latar) --> 
+  <audio id="bgMusic" loop> 
+    <source src="lagu 1.mp3" type="audio/mpeg"> 
+  </audio> 
+ 
+  <!-- JAVASCRIPT -->
+  <script src="js/java.js"></script>
 
-  <!-- AUDIO (musik latar) -->
-  <audio id="bgMusic" loop>
-  <source src="lagu 1.mp3" type="audio/mpeg">
-</audio>
+  <!-- FRAME UNTUK GOOGLE SPREADSHEET -->
+  <iframe
+    name="google_sheet_iframe"
+    style="display:none;">
+  </iframe>
 
-<script>
-const btnOpen = document.getElementById("btnOpen");
-const cover = document.getElementById("cover");
-const mainContent = document.getElementById("mainContent");
-const bgMusic = document.getElementById("bgMusic");
-const musicPlayer = document.getElementById("musicPlayer");
-
-btnOpen.addEventListener("click", function () {
-
-    // Hilangkan cover
-    cover.classList.add("hidden");
-
-    // Tampilkan konten utama
-    mainContent.classList.add("visible");
-
-    // Paksa konten utama agar terlihat
-    mainContent.style.opacity = "1";
-    mainContent.style.visibility = "visible";
-
-    // Paksa semua bagian undangan terlihat
-    const sections = document.querySelectorAll(
-        ".hero, .couple, .events, .gallery, .rsvp, .footer"
-    );
-
-    sections.forEach(function(section) {
-        section.style.opacity = "1";
-        section.style.visibility = "visible";
-        section.style.transform = "translateY(0)";
-    });
-
-    // Putar musik
-    bgMusic.volume = 0.4;
-
-    bgMusic.play()
-        .then(function() {
-            console.log("Musik berhasil diputar");
-            musicPlayer.classList.add("playing");
-        })
-        .catch(function(error) {
-            console.log("Musik tidak dapat diputar:", error);
-        });
-
-    // Kembali ke bagian paling atas
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-});
-
-
-// Tombol musik
-musicPlayer.addEventListener("click", function() {
-
-    if (bgMusic.paused) {
-
-        bgMusic.play();
-        musicPlayer.classList.add("playing");
-
-    } else {
-
-        bgMusic.pause();
-        musicPlayer.classList.remove("playing");
-
-    }
-
-});
-</script>
+</body> 
+</html>
