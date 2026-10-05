@@ -181,21 +181,70 @@
   <source src="lagu 1.mp3" type="audio/mpeg">
 </audio>
 
-<!-- JS -->
 <script>
-document.getElementById("btnOpen").addEventListener("click", function () {
+const btnOpen = document.getElementById("btnOpen");
+const cover = document.getElementById("cover");
+const mainContent = document.getElementById("mainContent");
+const bgMusic = document.getElementById("bgMusic");
+const musicPlayer = document.getElementById("musicPlayer");
 
-    document.getElementById("cover").classList.add("hidden");
+btnOpen.addEventListener("click", function () {
 
-    document.getElementById("mainContent").classList.add("visible");
+    // Hilangkan cover
+    cover.classList.add("hidden");
 
+    // Tampilkan konten utama
+    mainContent.classList.add("visible");
+
+    // Paksa konten utama agar terlihat
+    mainContent.style.opacity = "1";
+    mainContent.style.visibility = "visible";
+
+    // Paksa semua bagian undangan terlihat
+    const sections = document.querySelectorAll(
+        ".hero, .couple, .events, .gallery, .rsvp, .footer"
+    );
+
+    sections.forEach(function(section) {
+        section.style.opacity = "1";
+        section.style.visibility = "visible";
+        section.style.transform = "translateY(0)";
+    });
+
+    // Putar musik
+    bgMusic.volume = 0.4;
+
+    bgMusic.play()
+        .then(function() {
+            console.log("Musik berhasil diputar");
+            musicPlayer.classList.add("playing");
+        })
+        .catch(function(error) {
+            console.log("Musik tidak dapat diputar:", error);
+        });
+
+    // Kembali ke bagian paling atas
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
+});
+
+
+// Tombol musik
+musicPlayer.addEventListener("click", function() {
+
+    if (bgMusic.paused) {
+
+        bgMusic.play();
+        musicPlayer.classList.add("playing");
+
+    } else {
+
+        bgMusic.pause();
+        musicPlayer.classList.remove("playing");
+
+    }
 
 });
 </script>
-
-</body>
-</html>
