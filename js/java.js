@@ -1,11 +1,13 @@
-// ==========================================
-// JAVA.JS - UNDANGAN ELVA & RIDWAN
-// ==========================================
+// ========================================
+// KONFIGURASI GOOGLE APPS SCRIPT
+// ========================================
+
+const API_URL = "https://script.google.com/macros/s/AKfycby_NYHNjn14SD-QR8VNQ8RqWhlUmmTi0wek6rFzcdTDY_hdkuGTZsNNZr3N3VtbMB5nNw/exec";
 
 
-// ==========================================
-// AMBIL ELEMEN HTML
-// ==========================================
+// ========================================
+// ELEMEN
+// ========================================
 
 const cover = document.getElementById("cover");
 const btnOpen = document.getElementById("btnOpen");
@@ -18,44 +20,36 @@ const rsvpForm = document.getElementById("rsvpForm");
 const wishesList = document.getElementById("wishesList");
 
 
-// ==========================================
+// ========================================
 // BUKA UNDANGAN
-// ==========================================
+// ========================================
 
-if (btnOpen && cover && mainContent) {
+btnOpen.addEventListener("click", function () {
 
-    btnOpen.addEventListener("click", function () {
+    cover.classList.add("hidden");
 
-        // Hilangkan cover
-        cover.classList.add("hidden");
+    mainContent.classList.add("visible");
 
-        // Tampilkan isi undangan
-        mainContent.classList.add("visible");
+    playMusic();
 
-        // Putar musik
-        playMusic();
+    // Ambil ucapan dari Google Spreadsheet
+    loadWishes();
 
-        // Kembali ke bagian paling atas
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
     });
 
-}
+});
 
 
-// ==========================================
+// ========================================
 // MUSIK
-// ==========================================
+// ========================================
 
 let isPlaying = false;
 
-
 function playMusic() {
-
-    if (!bgMusic) return;
 
     bgMusic.volume = 0.4;
 
@@ -64,136 +58,213 @@ function playMusic() {
 
             isPlaying = true;
 
-            if (musicPlayer) {
-                musicPlayer.classList.add("playing");
-            }
+            musicPlayer.classList.add("playing");
 
         })
         .catch(function (error) {
 
-            console.log("Musik belum dapat diputar:", error);
+            console.log("Musik tidak dapat diputar:", error);
 
         });
 
 }
 
 
-// Tombol musik
+musicPlayer.addEventListener("click", function () {
 
-if (musicPlayer && bgMusic) {
+    if (isPlaying) {
 
-    musicPlayer.addEventListener("click", function () {
+        bgMusic.pause();
 
-        if (isPlaying) {
+        isPlaying = false;
 
-            // Pause musik
-            bgMusic.pause();
+        musicPlayer.classList.remove("playing");
 
-            isPlaying = false;
+    } else {
 
-            musicPlayer.classList.remove("playing");
+        bgMusic.play();
+
+        isPlaying = true;
+
+        musicPlayer.classList.add("playing");
+
+    }
+
+});
+
+
+// ========================================
+// MENGAMBIL UCAPAN DARI GOOGLE SPREADSHEET
+// ========================================
+
+function loadWishes() {
+
+    const callbackName = "wishesCallback_" + Date.now();
+
+    window[callbackName] = function (data) {
+
+        wishesList.innerHTML = "";
+
+        if (!data || data.length === 0) {
+
+            wishesList.innerHTML = `
+                <p style="text-align:center;">
+                    Belum ada ucapan.
+                </p>
+            `;
 
         } else {
 
-            // Play musik
-            bgMusic.play()
-                .then(function () {
+            data.reverse().forEach(function (item) {
 
-                    isPlaying = true;
+                const wishItem = document.createElement("div");
 
-                    musicPlayer.classList.add("playing");
+                wishItem.className = "wish-item";
 
-                })
-                .catch(function (error) {
+                wishItem.innerHTML = `
+                    <p class="wish-name">
+                        ${escapeHtml(item.nama)}
+                    </p>
 
-                    console.log("Musik gagal diputar:", error);
+                    <p class="wish-status">
+                        ${escapeHtml(item.status)}
+                    </p>
 
-                });
+                    <p class="wish-message">
+                        ${escapeHtml(item.ucapan)}
+                    </p>
+                `;
+
+                wishesList.appendChild(wishItem);
+
+            });
 
         }
 
-    });
+        delete window[callbackName];
+
+        if (script) {
+            script.remove();
+        }
+
+    };
+
+
+    const script = document.createElement("script");
+
+    script.src =
+        API_URL +
+        "?callback=" +
+        callbackName +
+        "&t=" +
+        Date.now();
+
+    document.body.appendChild(script);
 
 }
 
 
-// ==========================================
-// FORM UCAPAN
-// ==========================================
+// ========================================
+// KIRIM UCAPAN KE GOOGLE SPREADSHEET
+// ========================================
 
-if (rsvpForm) {
+rsvpForm.addEventListener("submit", function (e) {
 
-    rsvpForm.addEventListener("submit", function (event) {
-
-        event.preventDefault();
+    e.preventDefault();
 
 
-        const nameInput = document.getElementById("name");
-        const statusInput = document.getElementById("status");
-        const messageInput = document.getElementById("message");
+    const name =
+        document.getElementById("name").value.trim();
+
+    const status =
+        document.getElementById("status").value;
+
+    const message =
+        document.getElementById("message").value.trim();
 
 
-        const name = nameInput
-            ? nameInput.value.trim()
-            : "";
+    if (!name || !status || !message) {
 
-        const status = statusInput
-            ? statusInput.value
-            : "";
+        alert("Mohon lengkapi semua data terlebih dahulu.");
 
-        const message = messageInput
-            ? messageInput.value.trim()
-            : "";
+        return;
+
+    }
 
 
-        // Cek data
+    // ====================================
+    // FORM TERSEMBUNYI
+    // ====================================
 
-        if (!name || !status || !message) {
+    const hiddenForm = document.createElement("form");
 
-            alert("Mohon lengkapi semua data terlebih dahulu.");
+    hiddenForm.method = "POST";
 
-            return;
+    hiddenForm.action = API_URL;
 
-        }
-
-
-        // Tambahkan ucapan ke halaman
-
-        addWish(
-            name,
-            status,
-            message
-        );
+    hiddenForm.target = "google_sheet_iframe";
 
 
-        // Kosongkan form
+    // Nama
+    const namaInput = document.createElement("input");
 
-        rsvpForm.reset();
+    namaInput.type = "hidden";
+
+    namaInput.name = "nama";
+
+    namaInput.value = name;
+
+    hiddenForm.appendChild(namaInput);
 
 
-        alert("Ucapan berhasil dikirim ❤️");
+    // Status
+    const statusInput = document.createElement("input");
 
-    });
+    statusInput.type = "hidden";
 
-}
+    statusInput.name = "status";
+
+    statusInput.value = status;
+
+    hiddenForm.appendChild(statusInput);
 
 
-// ==========================================
-// MENAMBAHKAN UCAPAN
-// ==========================================
+    // Ucapan
+    const ucapanInput = document.createElement("input");
 
-function addWish(name, status, message) {
+    ucapanInput.type = "hidden";
 
-    if (!wishesList) return;
+    ucapanInput.name = "ucapan";
 
+    ucapanInput.value = message;
+
+    hiddenForm.appendChild(ucapanInput);
+
+
+    document.body.appendChild(hiddenForm);
+
+
+    // Kirim ke Google Spreadsheet
+    hiddenForm.submit();
+
+
+    // Hapus form sementara
+    setTimeout(function () {
+
+        hiddenForm.remove();
+
+    }, 1000);
+
+
+    // ====================================
+    // TAMPILKAN UCAPAN DI WEBSITE
+    // ====================================
 
     const wishItem = document.createElement("div");
 
     wishItem.className = "wish-item";
 
-
     wishItem.innerHTML = `
-
         <p class="wish-name">
             ${escapeHtml(name)}
         </p>
@@ -205,20 +276,24 @@ function addWish(name, status, message) {
         <p class="wish-message">
             ${escapeHtml(message)}
         </p>
-
     `;
 
 
-    // Ucapan terbaru di atas
-
     wishesList.prepend(wishItem);
 
-}
+
+    // Kosongkan form
+    rsvpForm.reset();
 
 
-// ==========================================
+    alert("Ucapan berhasil dikirim ❤️");
+
+});
+
+
+// ========================================
 // KEAMANAN TEKS
-// ==========================================
+// ========================================
 
 function escapeHtml(text) {
 
@@ -227,59 +302,5 @@ function escapeHtml(text) {
     div.textContent = text;
 
     return div.innerHTML;
-
-}
-
-
-// ==========================================
-// ANIMASI SECTION
-// ==========================================
-
-if ("IntersectionObserver" in window) {
-
-    const observer = new IntersectionObserver(
-
-        function (entries) {
-
-            entries.forEach(function (entry) {
-
-                if (entry.isIntersecting) {
-
-                    entry.target.style.opacity = "1";
-
-                    entry.target.style.transform =
-                        "translateY(0)";
-
-                }
-
-            });
-
-        },
-
-        {
-            threshold: 0.1,
-            rootMargin: "0px 0px -50px 0px"
-        }
-
-    );
-
-
-    document
-        .querySelectorAll(
-            ".hero, .couple, .events, .gallery, .rsvp"
-        )
-        .forEach(function (section) {
-
-            section.style.opacity = "0";
-
-            section.style.transform =
-                "translateY(30px)";
-
-            section.style.transition =
-                "opacity 0.8s ease, transform 0.8s ease";
-
-            observer.observe(section);
-
-        });
 
 }
