@@ -181,7 +181,21 @@
   <source src="lagu 1.mp3" type="audio/mpeg">
 </audio>
 
-  <!-- JS -->
-  <script src="js/java.js"></script>
+<!-- JS -->
+<script>
+document.getElementById("btnOpen").addEventListener("click", function () {
+
+    document.getElementById("cover").classList.add("hidden");
+
+    document.getElementById("mainContent").classList.add("visible");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+});
+</script>
+
 </body>
 </html>
