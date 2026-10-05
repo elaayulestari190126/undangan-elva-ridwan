@@ -1,112 +1,81 @@
-// ========== ELEMEN ==========
-const cover = document.getElementById('cover');
-const btnOpen = document.getElementById('btnOpen');
-const mainContent = document.getElementById('mainContent');
-const musicPlayer = document.getElementById('musicPlayer');
-const bgMusic = document.getElementById('bgMusic');
-const rsvpForm = document.getElementById('rsvpForm');
-const wishesList = document.getElementById('wishesList');
+const SHEET_NAME = "Sheet1";
 
-// ========== BUKA UNDANGAN ==========
-btnOpen.addEventListener('click', function () {
-  cover.classList.add('hidden');
-  mainContent.classList.add('visible');
 
-  // Putar musik otomatis setelah interaksi pengguna
-  playMusic();
+// ===============================
+// MENERIMA UCAPAN DARI WEBSITE
+// ===============================
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(SHEET_NAME);
 
-  // Scroll ke atas
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+    const nama = e.parameter.nama || "";
+    const status = e.parameter.status || "";
+    const ucapan = e.parameter.ucapan || "";
 
-// ========== MUSIC PLAYER ==========
-let isPlaying = false;
+    sheet.appendRow([
+      nama,
+      status,
+      ucapan,
+      new Date()
+    ]);
 
-function playMusic() {
-  bgMusic.volume = 0.4;
-  bgMusic.play().then(() => {
-    isPlaying = true;
-    musicPlayer.classList.add('playing');
-  }).catch((err) => {
-    console.log('Autoplay diblokir:', err);
-  });
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "success",
+        message: "Ucapan berhasil disimpan"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-musicPlayer.addEventListener('click', function () {
-  if (isPlaying) {
-    bgMusic.pause();
-    isPlaying = false;
-    musicPlayer.classList.remove('playing');
-  } else {
-    bgMusic.play();
-    isPlaying = true;
-    musicPlayer.classList.add('playing');
-  }
-});
 
-// ========== RSVP FORM ==========
-rsvpForm.addEventListener('submit', function (e) {
-  e.preventDefault();
+// ===============================
+// MENGAMBIL SEMUA UCAPAN
+// ===============================
+function doGet() {
+  try {
 
-  const name = document.getElementById('name').value.trim();
-  const status = document.getElementById('status').value;
-  const message = document.getElementById('message').value.trim();
+    const sheet = SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(SHEET_NAME);
 
-  if (!name || !status || !message) {
-    alert('Mohon lengkapi semua data terlebih dahulu.');
-    return;
-  }
+    const data = sheet.getDataRange().getValues();
 
-  // Buat elemen ucapan baru
-  const wishItem = document.createElement('div');
-  wishItem.classList.add('wish-item');
-  wishItem.innerHTML = `
-    <p class="wish-name">${escapeHtml(name)}</p>
-    <p class="wish-status">${escapeHtml(status)}</p>
-    <p class="wish-message">${escapeHtml(message)}</p>
-  `;
+    const result = [];
 
-  // Tambahkan ke daftar paling atas
-  wishesList.prepend(wishItem);
+    for (let i = 1; i < data.length; i++) {
 
-  // Reset form
-  rsvpForm.reset();
+      result.push({
+        nama: data[i][0],
+        status: data[i][1],
+        ucapan: data[i][2],
+        waktu: data[i][3]
+      });
 
-  // Scroll ke ucapan terbaru
-  wishItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  // Animasi
-  wishItem.style.animation = 'none';
-  wishItem.offsetHeight; // trigger reflow
-  wishItem.style.animation = 'fadeIn 0.5s ease';
-});
-
-// Fungsi escape HTML untuk keamanan
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ========== ANIMASI SCROLL (OPSIONAL) ==========
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
     }
-  });
-}, observerOptions);
 
-// Terapkan ke section-section utama
-document.querySelectorAll('.hero, .couple, .events, .gallery, .rsvp').forEach(section => {
-  section.style.opacity = '0';
-  section.style.transform = 'translateY(30px)';
-  section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-  observer.observe(section);
-});
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
