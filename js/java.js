@@ -1,6 +1,12 @@
 // ==========================================
-// ELEMEN
+// JAVA.JS - UNDANGAN ELVA & RIDWAN
 // ==========================================
+
+
+// ==========================================
+// AMBIL ELEMEN HTML
+// ==========================================
+
 const cover = document.getElementById("cover");
 const btnOpen = document.getElementById("btnOpen");
 const mainContent = document.getElementById("mainContent");
@@ -15,31 +21,37 @@ const wishesList = document.getElementById("wishesList");
 // ==========================================
 // BUKA UNDANGAN
 // ==========================================
-if (btnOpen) {
+
+if (btnOpen && cover && mainContent) {
+
     btnOpen.addEventListener("click", function () {
 
-        if (cover) {
-            cover.classList.add("hidden");
-        }
+        // Hilangkan cover
+        cover.classList.add("hidden");
 
-        if (mainContent) {
-            mainContent.classList.add("visible");
-        }
+        // Tampilkan isi undangan
+        mainContent.classList.add("visible");
 
+        // Putar musik
         playMusic();
 
+        // Kembali ke bagian paling atas
         window.scrollTo({
             top: 0,
             behavior: "smooth"
         });
+
     });
+
 }
 
 
 // ==========================================
 // MUSIK
 // ==========================================
+
 let isPlaying = false;
+
 
 function playMusic() {
 
@@ -59,20 +71,22 @@ function playMusic() {
         })
         .catch(function (error) {
 
-            console.log("Musik belum bisa diputar:", error);
+            console.log("Musik belum dapat diputar:", error);
 
         });
+
 }
 
 
-if (musicPlayer) {
+// Tombol musik
+
+if (musicPlayer && bgMusic) {
 
     musicPlayer.addEventListener("click", function () {
 
-        if (!bgMusic) return;
-
         if (isPlaying) {
 
+            // Pause musik
             bgMusic.pause();
 
             isPlaying = false;
@@ -81,6 +95,7 @@ if (musicPlayer) {
 
         } else {
 
+            // Play musik
             bgMusic.play()
                 .then(function () {
 
@@ -91,9 +106,10 @@ if (musicPlayer) {
                 })
                 .catch(function (error) {
 
-                    console.log("Musik gagal:", error);
+                    console.log("Musik gagal diputar:", error);
 
                 });
+
         }
 
     });
@@ -104,32 +120,58 @@ if (musicPlayer) {
 // ==========================================
 // FORM UCAPAN
 // ==========================================
+
 if (rsvpForm) {
 
-    rsvpForm.addEventListener("submit", function (e) {
+    rsvpForm.addEventListener("submit", function (event) {
 
-        e.preventDefault();
+        event.preventDefault();
 
-        const nameElement = document.getElementById("name");
-        const statusElement = document.getElementById("status");
-        const messageElement = document.getElementById("message");
 
-        const name = nameElement ? nameElement.value.trim() : "";
-        const status = statusElement ? statusElement.value : "";
-        const message = messageElement ? messageElement.value.trim() : "";
+        const nameInput = document.getElementById("name");
+        const statusInput = document.getElementById("status");
+        const messageInput = document.getElementById("message");
+
+
+        const name = nameInput
+            ? nameInput.value.trim()
+            : "";
+
+        const status = statusInput
+            ? statusInput.value
+            : "";
+
+        const message = messageInput
+            ? messageInput.value.trim()
+            : "";
+
+
+        // Cek data
 
         if (!name || !status || !message) {
 
             alert("Mohon lengkapi semua data terlebih dahulu.");
 
             return;
+
         }
 
-        addWishToPage(name, status, message);
+
+        // Tambahkan ucapan ke halaman
+
+        addWish(
+            name,
+            status,
+            message
+        );
+
+
+        // Kosongkan form
 
         rsvpForm.reset();
 
-        alert("Ucapan berhasil ditambahkan ❤️");
+
+        alert("Ucapan berhasil dikirim ❤️");
 
     });
 
@@ -137,21 +179,37 @@ if (rsvpForm) {
 
 
 // ==========================================
-// TAMBAH UCAPAN KE HALAMAN
+// MENAMBAHKAN UCAPAN
 // ==========================================
-function addWishToPage(name, status, message) {
+
+function addWish(name, status, message) {
 
     if (!wishesList) return;
 
+
     const wishItem = document.createElement("div");
 
-    wishItem.classList.add("wish-item");
+    wishItem.className = "wish-item";
+
 
     wishItem.innerHTML = `
-        <p class="wish-name">${escapeHtml(name)}</p>
-        <p class="wish-status">${escapeHtml(status)}</p>
-        <p class="wish-message">${escapeHtml(message)}</p>
+
+        <p class="wish-name">
+            ${escapeHtml(name)}
+        </p>
+
+        <p class="wish-status">
+            ${escapeHtml(status)}
+        </p>
+
+        <p class="wish-message">
+            ${escapeHtml(message)}
+        </p>
+
     `;
+
+
+    // Ucapan terbaru di atas
 
     wishesList.prepend(wishItem);
 
@@ -159,8 +217,9 @@ function addWishToPage(name, status, message) {
 
 
 // ==========================================
-// AMANKAN TEKS
+// KEAMANAN TEKS
 // ==========================================
+
 function escapeHtml(text) {
 
     const div = document.createElement("div");
@@ -168,59 +227,59 @@ function escapeHtml(text) {
     div.textContent = text;
 
     return div.innerHTML;
+
 }
 
 
 // ==========================================
-// ANIMASI
+// ANIMASI SECTION
 // ==========================================
-const observerOptions = {
 
-    threshold: 0.1,
+if ("IntersectionObserver" in window) {
 
-    rootMargin: "0px 0px -50px 0px"
+    const observer = new IntersectionObserver(
 
-};
+        function (entries) {
+
+            entries.forEach(function (entry) {
+
+                if (entry.isIntersecting) {
+
+                    entry.target.style.opacity = "1";
+
+                    entry.target.style.transform =
+                        "translateY(0)";
+
+                }
+
+            });
+
+        },
+
+        {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        }
+
+    );
 
 
-const observer = new IntersectionObserver(
+    document
+        .querySelectorAll(
+            ".hero, .couple, .events, .gallery, .rsvp"
+        )
+        .forEach(function (section) {
 
-    function (entries) {
+            section.style.opacity = "0";
 
-        entries.forEach(function (entry) {
+            section.style.transform =
+                "translateY(30px)";
 
-            if (entry.isIntersecting) {
+            section.style.transition =
+                "opacity 0.8s ease, transform 0.8s ease";
 
-                entry.target.style.opacity = "1";
-
-                entry.target.style.transform =
-                    "translateY(0)";
-
-            }
+            observer.observe(section);
 
         });
 
-    },
-
-    observerOptions
-
-);
-
-
-document
-    .querySelectorAll(
-        ".hero, .couple, .events, .gallery, .rsvp"
-    )
-    .forEach(function (section) {
-
-        section.style.opacity = "0";
-
-        section.style.transform =
-            "translateY(30px)";
-
-        section.style.transition =
-            "opacity 0.8s ease, transform 0.8s ease";
-
-        observer.observe(section);
-
-    });
+}
