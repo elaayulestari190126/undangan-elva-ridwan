@@ -304,3 +304,32 @@ function escapeHtml(text) {
     return div.innerHTML;
 
 }
+
+
+// ========================================
+// SALIN NOMOR REKENING WEDDING GIFT
+// ========================================
+const copyBankButton = document.getElementById("copyBank");
+const bankNumberElement = document.getElementById("bankNumber");
+const copyFeedback = document.getElementById("copyFeedback");
+
+if (copyBankButton && bankNumberElement) {
+    copyBankButton.addEventListener("click", async function () {
+        const accountNumber = bankNumberElement.textContent.replace(/\\s/g, "");
+
+        try {
+            await navigator.clipboard.writeText(accountNumber);
+            copyFeedback.textContent = "Nomor rekening berhasil disalin.";
+        } catch (error) {
+            const temporaryInput = document.createElement("textarea");
+            temporaryInput.value = accountNumber;
+            temporaryInput.style.position = "fixed";
+            temporaryInput.style.opacity = "0";
+            document.body.appendChild(temporaryInput);
+            temporaryInput.select();
+            document.execCommand("copy");
+            temporaryInput.remove();
+            copyFeedback.textContent = "Nomor rekening berhasil disalin.";
+        }
+    });
+}
